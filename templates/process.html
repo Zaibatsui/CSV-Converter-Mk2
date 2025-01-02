@@ -1,0 +1,21 @@
+<!doctype html>
+<title>CSV/Excel File Processor</title>
+<h1>File Uploaded - Specify Options</h1>
+<form method=post>
+  <input type=hidden name=session_key value="{{ session_key }}">
+  <label for="headers">Current headers in your file:</label><br>
+  <ul>
+  {% for header in headers %}
+    <li>{{ header }}</li>
+  {% endfor %}
+  </ul>
+  <label for="order">Enter header names in the desired order separated by commas:</label><br>
+  <input type="text" id="order" name="order"><br><br>
+  <label for="output_format">Choose output format:</label><br>
+  <select name="output_format" id="output_format">
+      <option value="csv">CSV</option>
+      <option value="tab">Tab Separated</option>
+  </select><br><br>
+  <input type=submit name="action" value="Reorder and download">
+  <input type=submit name="action" value="Cancel">
+</form>
