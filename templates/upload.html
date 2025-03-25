@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload and Reorder File</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <style>
-        /* CSS styles from your 1-column template with some adjustments for demonstration booking */
         :root, :host {
             --empori-primary-color: #e21836;
             --empori-primary-alt-color: #ec2e4c;
@@ -35,18 +36,18 @@
         }
 
         .titleheader {
-            background-color: #e0173b; /* Custom color for title header */
+            background-color: #e0173b;
             text-align: center;
             padding: 10px 0;
             color: var(--empori-font-color);
-            border-top-left-radius: 8px; /* Rounded top-left corner */
-            border-top-right-radius: 8px; /* Rounded top-right corner */
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
         }
 
         .titleheader img {
-            max-width: 230px; /* Adjust the max-width as needed */
+            max-width: 230px;
             height: auto;
-            margin-bottom: -10px; /* Add space below the logo */
+            margin-bottom: -10px;
         }
 
         .content {
@@ -58,142 +59,173 @@
             text-align: center;
         }
 
-        h1 {
+        h1, h2 {
             color: #fff;
             font-size: large;
         }
 
-        h2 {
-            font-size: large;
-        }
-
         form {
-            margin-top: 10px; /* Adjust the margin as needed */
-        }
-
-        input[type="file"] {
-            width: 95%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #393939;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        ul li {
-            margin: 1px 0;
-            font-size: 15px;
-        }
-
-        label {
-            display: block;
             margin-top: 10px;
-            font-weight: bold;
-            font-size: small;
         }
 
-        input[type="text"] {
+        input[type="file"], input[type="text"], select {
             width: 95%;
-            padding: 10px;
+            padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #393939;
             color: #ffffff;
         }
 
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #393939;
-            color: #fff;
-        }
-
         input[type="checkbox"] {
             margin-right: 5px;
         }
 
-        input[type="submit"] {
+        input[type="submit"], button {
             background-color: var(--empori-light-gray-color);
             color: var(--empori-primary-color);
-            padding: 10px 20px;
+            padding: 5px 20px;
             margin-top: 15px;
             border: 2px solid var(--empori-primary-color);
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, button:hover {
             background-color: var(--empori-primary-color);
             color: var(--empori-font-color);
+        }
+
+        #sortable-headers {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .draggable-header {
+            background-color: var(--empori-primary-color);
+            color: var(--empori-light-gray-color);
+            padding: 4px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            cursor: grab;
+            font-size: 15px;
+            border: 1px solid var(--empori-primary-color);
+            position: relative;
+        }
+
+        .draggable-header:hover {
+            background-color: transparent;
+            color: white;
+        }
+
+        .remove-header {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: inherit;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .draggable-header:hover .remove-header {
+            color: inherit;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="titleheader">
-            <img src="https://demo.nettailer.com/fileupload/netset-logo-white-300x93.png" alt="Logo">
-            <h1>Upload and Reorder File</h1>
-        </div>
-        <div class="content">
-            <form method="post" enctype="multipart/form-data">
-                <label for="file">Choose a file:</label>
-                <input type="file" name="file" accept=".csv, .txt, .xls, .xlsx">
-                <input type="submit" value="Upload">
-            </form>
-            
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <div class="error-messages">
-                <ul>
-                    {% for message in messages %}
-                    <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            {% endwith %}
+<div class="container">
+    <div class="titleheader">
+        <img src="https://demo.nettailer.com/fileupload/netset-logo-white-300x93.png" alt="Logo">
+        <h1>Upload and Reorder File</h1>
+    </div>
+    <div class="content">
+        <form method="post" enctype="multipart/form-data">
+            <label for="file">Choose a file:</label>
+            <input type="file" name="file" accept=".csv, .txt, .xls, .xlsx">
+            <input type="submit" value="Upload">
+        </form>
 
-            {% if headers %}
-            <hr>
-            <h2>Current Column Headers:</h2>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="error-messages">
             <ul>
-                {% for header in headers %}
-                <li>{{ header }}</li>
+                {% for message in messages %}
+                <li>{{ message }}</li>
                 {% endfor %}
             </ul>
-
-            <h2>Specify New Column Order:</h2>
-            <form method="post" action="/reorder/{{ session_key }}">
-                <input type="hidden" name="session_key" value="{{ session_key }}">
-                <label for="new_order">Enter header names in the desired order separated by commas or use '*' for a blank column:</label>
-                <input type="text" id="new_order" name="new_order">
-                
-                <label for="delimiter">Select Delimiter:</label>
-                <select name="delimiter" id="delimiter">
-                    <option value="comma">Comma (CSV)</option>
-                    <option value="tab">Tab (TXT)</option>
-                </select>
-                
-                <label for="extension">Select File Extension:</label>
-                <select name="extension" id="extension">
-                    <option value="csv">CSV</option>
-                    <option value="txt">TXT</option>
-                </select>
-
-                <label for="rename_headers">Rename headers to use Netset format: <input type="checkbox" id="rename_headers" name="rename_headers"></label>
-                
-                <input type="submit" value="Reorder">
-            </form>
-            {% endif %}
         </div>
+        {% endif %}
+        {% endwith %}
+
+        {% if headers %}
+        <hr>
+        <h2 style="margin-bottom: 5px;">Reorder headers</h2>
+        <p style="font-size: small;">Click and drag headers into desired order</p>
+        <ul id="sortable-headers">
+            {% for header in headers %}
+            <li class="draggable-header" data-header="{{ header }}">
+                {{ header }}
+                <span class="remove-header" onclick="removeHeader(this)">×</span>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <input type="text" id="customHeaderInput" placeholder="Enter custom header label">
+        <button type="button" onclick="addCustomHeader()">Add Header</button>
+
+        <form method="post" action="/reorder/{{ session_key }}" onsubmit="setHeaderOrder()">
+            <input type="hidden" name="session_key" value="{{ session_key }}">
+            <input type="hidden" id="new_order" name="new_order">
+
+            <label for="delimiter">Select Delimiter:</label>
+            <select name="delimiter" id="delimiter">
+                <option value="comma">Comma (CSV)</option>
+                <option value="tab">Tab (TXT)</option>
+            </select>
+
+            <label for="extension">Select File Extension:</label>
+            <select name="extension" id="extension">
+                <option value="csv">CSV</option>
+                <option value="txt">TXT</option>
+            </select>
+
+            <input type="submit" value="Reorder">
+        </form>
+        {% endif %}
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    new Sortable(document.getElementById('sortable-headers'), {
+        animation: 150
+    });
+
+    function setHeaderOrder() {
+        const items = document.querySelectorAll('.draggable-header');
+        const order = Array.from(items).map(el => el.dataset.header);
+        document.getElementById('new_order').value = order.join(',');
+    }
+
+    function removeHeader(el) {
+        el.parentElement.remove();
+    }
+
+    function addCustomHeader() {
+        const label = document.getElementById('customHeaderInput').value.trim();
+        if (!label) return;
+
+        const li = document.createElement('li');
+        li.className = 'draggable-header';
+        li.dataset.header = label;
+        li.innerHTML = `${label} <span class="remove-header" onclick="removeHeader(this)">×</span>`;
+
+        document.getElementById('sortable-headers').appendChild(li);
+        document.getElementById('customHeaderInput').value = '';
+    }
+</script>
 </body>
 </html>
